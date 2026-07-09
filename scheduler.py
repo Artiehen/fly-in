@@ -146,7 +146,10 @@ class Scheduler:
 
         current = drone.position
 
-        edge = tuple(sorted((current, next_node)))
+        if current < next_node:
+            edge: tuple[str, str] = (current, next_node)
+        else:
+            edge = (next_node, current)
 
         edge_reservation[edge] += 1
 
