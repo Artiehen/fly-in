@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+# from typing import Any
 
 
 class InvalidConfig(Exception):
@@ -23,8 +24,8 @@ class Connection:
     max_link_cap: int = 1
 
 
-def parse_metadata(text: str, line_no: int) -> dict:
-    metadata = {}
+def parse_metadata(text: str, line_no: int) -> dict[str, str]:
+    metadata: dict[str, str] = {}
 
     if not text:
         return metadata
@@ -45,11 +46,12 @@ def parse_metadata(text: str, line_no: int) -> dict:
     return metadata
 
 
-def parse_file(filename):
-    nb_drones = None
-    hubs = {}
-    connections = []
-    seen_connections = set()
+def parse_file(filename: str) -> tuple[int, dict[str,
+                                                 MapData], list[Connection]]:
+    nb_drones: int | None = None
+    hubs: dict = {}
+    connections: list = []
+    seen_connections: set[tuple[str, str]] = set()
 
     start_count = 0
     end_count = 0

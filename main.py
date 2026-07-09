@@ -66,12 +66,6 @@ def main():
         drones
     )
 
-    # 5. Create renderer
-    # renderer = Renderer(hubs, drones)
-
-    # attach renderer if scheduler uses it
-    # scheduler.renderer = renderer
-
     # 6. Run simulation
     scheduler.run()
     print(f"Total ammount of turns: {scheduler.turn}")
@@ -86,5 +80,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
-# this comment is a test

@@ -1,0 +1,504 @@
+
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+<meta charset="UTF-8">
+
+<title>
+Drone Simulation
+</title>
+
+
+<style>
+
+body {
+
+    background:#202020;
+    color:white;
+
+    font-family:Arial;
+    text-align:center;
+
+}
+
+
+canvas {
+
+    background:#111;
+
+    border:2px solid white;
+
+}
+
+
+button {
+
+    margin:5px;
+
+    padding:8px 15px;
+
+    font-size:16px;
+
+}
+
+</style>
+
+</head>
+
+
+<body>
+
+
+<h1>
+Drone Simulation
+</h1>
+
+
+<canvas id="canvas"
+        width="1000"
+        height="800">
+</canvas>
+
+
+<br>
+
+
+<button onclick="play()">
+Play
+</button>
+
+
+<button onclick="pause()">
+Pause
+</button>
+
+
+<button onclick="nextFrame()">
+Next
+</button>
+
+
+<h3 id="turn">
+Turn: 0
+</h3>
+
+
+
+<script>
+
+
+const hubs =
+{"start": {"x": 0, "y": 0, "kind": "start", "zone": "normal"}, "maze_a1": {"x": 1, "y": 0, "kind": "normal", "zone": "normal"}, "maze_a2": {"x": 2, "y": 0, "kind": "normal", "zone": "normal"}, "maze_b1": {"x": 1, "y": 1, "kind": "normal", "zone": "normal"}, "maze_b2": {"x": 2, "y": 1, "kind": "normal", "zone": "normal"}, "maze_c1": {"x": 1, "y": 2, "kind": "normal", "zone": "normal"}, "maze_c2": {"x": 3, "y": 1, "kind": "normal", "zone": "normal"}, "dead_end1": {"x": 0, "y": 1, "kind": "normal", "zone": "normal"}, "dead_end2": {"x": 0, "y": 2, "kind": "normal", "zone": "normal"}, "dead_end3": {"x": 2, "y": -1, "kind": "normal", "zone": "normal"}, "trap_loop1": {"x": 4, "y": 0, "kind": "normal", "zone": "restricted"}, "trap_loop2": {"x": 4, "y": 2, "kind": "normal", "zone": "restricted"}, "bottleneck": {"x": 5, "y": 1, "kind": "normal", "zone": "normal"}, "final_stretch1": {"x": 6, "y": 0, "kind": "normal", "zone": "priority"}, "final_stretch2": {"x": 6, "y": 1, "kind": "normal", "zone": "priority"}, "final_stretch3": {"x": 6, "y": 2, "kind": "normal", "zone": "priority"}, "goal": {"x": 7, "y": 1, "kind": "end", "zone": "normal"}};
+
+
+const edges =
+[{"from": "start", "to": "maze_a1"}, {"from": "maze_a1", "to": "maze_a2"}, {"from": "maze_a1", "to": "maze_b1"}, {"from": "maze_b1", "to": "maze_b2"}, {"from": "maze_b2", "to": "maze_c2"}, {"from": "maze_c2", "to": "maze_a2"}, {"from": "maze_c2", "to": "bottleneck"}, {"from": "start", "to": "dead_end1"}, {"from": "dead_end1", "to": "dead_end2"}, {"from": "maze_a2", "to": "dead_end3"}, {"from": "maze_a2", "to": "trap_loop1"}, {"from": "trap_loop1", "to": "trap_loop2"}, {"from": "trap_loop2", "to": "maze_c1"}, {"from": "maze_b1", "to": "maze_c1"}, {"from": "maze_c1", "to": "maze_b2"}, {"from": "maze_b2", "to": "maze_a2"}, {"from": "bottleneck", "to": "final_stretch1"}, {"from": "bottleneck", "to": "final_stretch2"}, {"from": "bottleneck", "to": "final_stretch3"}, {"from": "final_stretch1", "to": "goal"}, {"from": "final_stretch2", "to": "goal"}, {"from": "final_stretch3", "to": "goal"}];
+
+
+const frames =
+[{"1": "start", "2": "start", "3": "start", "4": "start", "5": "start", "6": "start", "7": "start", "8": "start"}, {"1": "maze_a1", "2": "maze_a1", "3": "start", "4": "start", "5": "start", "6": "start", "7": "start", "8": "start"}, {"1": "maze_a2", "2": "maze_a1", "3": "maze_a1", "4": "start", "5": "start", "6": "start", "7": "start", "8": "start"}, {"1": "maze_c2", "2": "maze_a2", "3": "maze_a1", "4": "maze_a1", "5": "start", "6": "start", "7": "start", "8": "start"}, {"1": "bottleneck", "2": "maze_c2", "3": "maze_a2", "4": "maze_a1", "5": "maze_a1", "6": "start", "7": "start", "8": "start"}, {"1": "final_stretch2", "2": "bottleneck", "3": "maze_c2", "4": "maze_a2", "5": "maze_a1", "6": "maze_a1", "7": "start", "8": "start"}, {"1": "goal", "2": "final_stretch2", "3": "bottleneck", "4": "maze_c2", "5": "maze_a2", "6": "maze_a1", "7": "maze_a1", "8": "start"}, {"1": "goal", "2": "goal", "3": "final_stretch2", "4": "bottleneck", "5": "maze_c2", "6": "maze_a2", "7": "maze_a1", "8": "maze_a1"}, {"1": "goal", "2": "goal", "3": "goal", "4": "final_stretch2", "5": "bottleneck", "6": "maze_c2", "7": "maze_a2", "8": "maze_a1"}, {"1": "goal", "2": "goal", "3": "goal", "4": "goal", "5": "final_stretch2", "6": "bottleneck", "7": "maze_c2", "8": "maze_a2"}, {"1": "goal", "2": "goal", "3": "goal", "4": "goal", "5": "goal", "6": "final_stretch2", "7": "bottleneck", "8": "maze_c2"}, {"1": "goal", "2": "goal", "3": "goal", "4": "goal", "5": "goal", "6": "goal", "7": "final_stretch2", "8": "bottleneck"}, {"1": "goal", "2": "goal", "3": "goal", "4": "goal", "5": "goal", "6": "goal", "7": "goal", "8": "final_stretch2"}, {"1": "goal", "2": "goal", "3": "goal", "4": "goal", "5": "goal", "6": "goal", "7": "goal", "8": "goal"}];
+
+
+const bounds =
+{"min_x": 0, "max_x": 7, "min_y": -1, "max_y": 2};
+
+
+
+const canvas =
+document.getElementById("canvas");
+
+
+const ctx =
+canvas.getContext("2d");
+
+
+
+let frame = 0;
+
+let timer = null;
+
+
+
+// -------------------------
+// Scaling and centering
+// -------------------------
+
+const mapWidth =
+bounds.max_x - bounds.min_x;
+
+
+const mapHeight =
+bounds.max_y - bounds.min_y;
+
+
+
+const scale =
+Math.min(
+
+    (canvas.width - 150) /
+    Math.max(mapWidth,1),
+
+    (canvas.height - 150) /
+    Math.max(mapHeight,1)
+
+);
+
+
+
+const offsetX =
+(
+    canvas.width -
+    mapWidth * scale
+) / 2;
+
+
+
+const offsetY =
+(
+    canvas.height -
+    mapHeight * scale
+) / 2;
+
+
+
+function transform(x,y)
+{
+
+    return [
+
+        offsetX +
+        (x - bounds.min_x)
+        * scale,
+
+
+        canvas.height -
+        offsetY -
+        (y - bounds.min_y)
+        * scale
+
+    ];
+
+}
+
+
+
+// -------------------------
+// Draw
+// -------------------------
+
+function draw()
+{
+
+    ctx.clearRect(
+        0,
+        0,
+        canvas.width,
+        canvas.height
+    );
+
+
+
+    // Draw connections
+
+    ctx.strokeStyle = "gray";
+
+    ctx.lineWidth = 2;
+
+
+    edges.forEach(edge => {
+
+        let a =
+        hubs[edge.from];
+
+
+        let b =
+        hubs[edge.to];
+
+
+        let p1 =
+        transform(a.x,a.y);
+
+
+        let p2 =
+        transform(b.x,b.y);
+
+
+        ctx.beginPath();
+
+        ctx.moveTo(
+            p1[0],
+            p1[1]
+        );
+
+
+        ctx.lineTo(
+            p2[0],
+            p2[1]
+        );
+
+
+        ctx.stroke();
+
+
+    });
+
+
+
+    // Draw hubs
+
+    for(let name in hubs)
+    {
+
+        let hub =
+        hubs[name];
+
+
+        let pos =
+        transform(
+            hub.x,
+            hub.y
+        );
+
+
+        if(hub.kind === "start")
+
+            ctx.fillStyle =
+            "lime";
+
+
+        else if(hub.kind === "end")
+
+            ctx.fillStyle =
+            "red";
+
+
+        else
+
+            ctx.fillStyle =
+            "white";
+
+
+
+        ctx.beginPath();
+
+
+        ctx.arc(
+            pos[0],
+            pos[1],
+            12,
+            0,
+            Math.PI*2
+        );
+
+
+        ctx.fill();
+
+
+
+        ctx.fillStyle =
+        "yellow";
+
+
+        ctx.fillText(
+            name,
+            pos[0]-10,
+            pos[1]-18
+        );
+
+
+    }
+
+
+
+    // Draw drones
+
+    let drones =
+    frames[frame];
+
+
+    let colors =
+    [
+        "cyan",
+        "orange",
+        "lime",
+        "pink",
+        "magenta",
+        "gold",
+        "deepskyblue",
+        "violet"
+    ];
+
+
+    let index = 0;
+
+
+    let occupied = {};
+
+
+
+    for(let drone in drones)
+    {
+
+        let hubName =
+        drones[drone];
+
+
+        let hub =
+        hubs[hubName];
+
+
+        let pos =
+        transform(
+            hub.x,
+            hub.y
+        );
+
+
+
+        if(!occupied[hubName])
+            occupied[hubName]=0;
+
+
+
+        let angle =
+        occupied[hubName]
+        *
+        Math.PI/4;
+
+
+
+        pos[0] +=
+        Math.cos(angle)*18;
+
+
+        pos[1] +=
+        Math.sin(angle)*18;
+
+
+
+        occupied[hubName]++;
+
+
+
+        ctx.fillStyle =
+        colors[index %
+        colors.length];
+
+
+        ctx.beginPath();
+
+
+        ctx.arc(
+            pos[0],
+            pos[1],
+            7,
+            0,
+            Math.PI*2
+        );
+
+
+        ctx.fill();
+
+
+
+        ctx.fillStyle =
+        "white";
+
+
+        ctx.fillText(
+            drone,
+            pos[0]+10,
+            pos[1]
+        );
+
+
+        index++;
+
+    }
+
+
+
+    document.getElementById("turn")
+    .innerHTML =
+    "Turn: " + frame;
+
+}
+
+
+
+// -------------------------
+// Controls
+// -------------------------
+
+function nextFrame()
+{
+
+    if(frame < frames.length-1)
+
+        frame++;
+
+
+    draw();
+
+}
+
+
+
+function play()
+{
+
+    if(timer)
+        return;
+
+
+    timer =
+    setInterval(
+        function()
+        {
+
+            if(frame >= frames.length-1)
+            {
+
+                pause();
+
+                return;
+
+            }
+
+
+            frame++;
+
+            draw();
+
+
+        },
+        700
+    );
+
+}
+
+
+
+function pause()
+{
+
+    clearInterval(timer);
+
+    timer=null;
+
+}
+
+
+
+draw();
+
+
+</script>
+
+
+</body>
+
+</html>

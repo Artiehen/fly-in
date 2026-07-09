@@ -1,27 +1,27 @@
 from collections import defaultdict
+from typing import DefaultDict
 
 
 # neighbor -> edge capacity
 class Zone:
-    def __init__(self, name, cost=1, max_drones=1):
-        self.name = name
-        self.cost = cost
-        self.max_drones = max_drones
-        self.neighbors = {}
+    def __init__(self, name: str, cost: int = 1, max_drones: int = 1):
+        self.name: str = name
+        self.cost: int = cost
+        self.max_drones: int = max_drones
+        self.neighbors: dict[str, int] = {}
 
 
 class Graph:
 
-    def __init__(self, hubs, connections):
+    def __init__(self, hubs: dict, connections: list):
 
         self.hubs = hubs
 
         # adjacency list
-        self.graph = defaultdict(list)
+        self.graph: DefaultDict[str, list[tuple[str, int]]] = defaultdict(list)
 
         # edge capacities
-        self.cap = defaultdict(dict)
-
+        self.cap: DefaultDict[str, dict[str, int]] = defaultdict(dict)
         for con in connections:
 
             self.graph[con.from_hub].append(
