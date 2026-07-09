@@ -1,15 +1,41 @@
 import json
+from typing import TypedDict
+from fileparser import MapData, Connection
+
+
+class HubData(TypedDict):
+    x: int
+    y: int
+    kind: str
+    zone: str
+
+
+ConnectionData = TypedDict(
+    "ConnectionData",
+    {
+        "from": str,
+        "to": str,
+    },
+)
+
+
+class BoundsData(TypedDict):
+    min_x: int
+    max_x: int
+    min_y: int
+    max_y: int
 
 
 class HTMLExporter:
 
-    def __init__(self, hubs, connections, frames):
+    def __init__(self, hubs: dict[str, MapData], connections: list[Connection],
+                 frames: list[dict[str, str]]) -> None:
         self.hubs = hubs
         self.connections = connections
         self.frames = frames
 
-    def export(self, filename="simulation.html"):
-        hubs_data = {}
+    def export(self, filename: str = "simulation.html") -> None:
+        hubs_data: dict[str, HubData] = {}
 
         for name, hub in self.hubs.items():
 
@@ -20,7 +46,7 @@ class HTMLExporter:
                 "zone": hub.zone
             }
 
-        connections_data = []
+        connections_data: list[ConnectionData] = []
 
         for c in self.connections:
 
@@ -41,7 +67,7 @@ class HTMLExporter:
             for h in hubs_data.values()
         ]
 
-        bounds_data = {
+        bounds_data: BoundsData = {
 
             "min_x": min(xs),
             "max_x": max(xs),
