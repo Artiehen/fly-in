@@ -1,13 +1,21 @@
 import sys
 
-from fileparser import parse_file
+from fileparser import parse_file, MapData
 from scheduler import Scheduler
 from graph import Graph
 from drones import Drone
 from htmlexporter import HTMLExporter
 
 
-def create_drones(nb_drones, start, goal):
+def create_drones(
+    nb_drones: int,
+    start: str,
+    goal: str,
+) -> list[Drone]:
+    return [
+        Drone(i + 1, start, goal)
+        for i in range(nb_drones)
+    ]
 
     return [
         Drone(i + 1, start, goal)
@@ -18,10 +26,12 @@ def create_drones(nb_drones, start, goal):
 # -------------------------
 # Find start/end hubs
 # -------------------------
-def get_start_end(hubs):
+def get_start_end(
+    hubs: dict[str, MapData],
+) -> tuple[str, str]:
 
-    start = None
-    end = None
+    start: str | None = None
+    end: str | None = None
 
     for hub in hubs.values():
 
@@ -40,7 +50,7 @@ def get_start_end(hubs):
 # -------------------------
 # MAIN
 # -------------------------
-def main():
+def main() -> None:
 
     if len(sys.argv) < 2:
         print("Usage: python main.py <map_file>")
