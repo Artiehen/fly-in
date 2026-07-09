@@ -1,6 +1,10 @@
 import heapq
 from collections import defaultdict
 from colorama import Fore, init
+# from typing import Any
+from graph import Graph
+from fileparser import MapData
+from drones import Drone
 
 init(autoreset=True)
 
@@ -15,21 +19,20 @@ ZONE_COST = {
 # =========================
 # A* PATHFINDING
 # =========================
-def heuristic(hubs, a, b):
+def heuristic(hubs: dict[str, MapData], a: str, b: str) -> int:
     """Manhattan distance using coordinates"""
     ha = hubs[a]
     hb = hubs[b]
     return abs(ha.x - hb.x) + abs(ha.y - hb.y)
 
 
-def astar(graph, hubs, start, goal):
+def astar(graph: Graph, hubs: dict[str, MapData],
+          start: str, goal: str) -> list[str]:
     """A* shortest path"""
 
-    pq = [(0, start)]
-
-    came_from = {}
-    cost_so_far = {start: 0}
-
+    pq: list[tuple[float, str]] = [(0, start)]
+    came_from: dict[str, str | None] = {start: None}
+    cost_so_far: dict[str, float] = {start: 0}
     came_from[start] = None
 
     while pq:
@@ -64,8 +67,8 @@ def astar(graph, hubs, start, goal):
         return []
 
     # reconstruct path
-    path = []
-    node = goal
+    path: list = []
+    node: str | None = goal
 
     while node is not None:
         path.append(node)
@@ -81,29 +84,30 @@ def astar(graph, hubs, start, goal):
 # =========================
 class Scheduler:
 
-    def __init__(self, graph, hubs, drones):
+    def __init__(self, graph: Graph, hubs: dict[str, MapData],
+                 drones: list[Drone]) -> None:
 
-        self.graph = graph
-        self.hubs = hubs
-        self.drones = drones
-        self.frames = []
+        self.graph: Graph = graph
+        self.hubs: dict[str, MapData] = hubs
+        self.drones: list[Drone] = drones
+        self.frames: list[dict[str, str]] = []
 
-        self.turn = 0
+        self.turn: int = 0
 
         # occupancy tracking
-        self.zone_occupancy = defaultdict(int)
+        self.zone_occupancy: defaultdict[str, int] = defaultdict(int)
 
     # -------------------------
-    def all_finished(self):
+    def all_finished(self) -> bool:
         return all(d.finished for d in self.drones)
 
     # -------------------------
-    def plan_paths(self):
+    def plan_paths(self) -> None:
         for d in self.drones:
             d.path = astar(self.graph, self.hubs, d.position, d.goal)
 
     # -------------------------
-    def rebuild_occupancy(self):
+    def rebuild_occupancy(self) -> None:
         self.zone_occupancy.clear()
 
         for d in self.drones:
@@ -111,7 +115,8 @@ class Scheduler:
                 self.zone_occupancy[d.position] += 1
 
     # -------------------------
-    def can_move(self, drone, next_node, edge_reservation):
+    def can_move(self, drone: Drone, next_node: str,
+                 edge_reservation: defaultdict[tuple[str, str], int]) -> bool:
 
         hub = self.hubs[next_node]
 
@@ -121,7 +126,12 @@ class Scheduler:
 
         # edge capacity check
         current = drone.position
-        edge = tuple(sorted((current, next_node)))
+        edge: tuple[str, str]
+
+        if current < next_node:
+            edge = (current, next_node)
+        else:
+            edge = (next_node, current)
 
         graph_cap = self.graph.cap[current][next_node]
 
@@ -131,7 +141,8 @@ class Scheduler:
         return True
 
     # -------------------------
-    def move_drone(self, drone, next_node, edge_reservation):
+    def move_drone(self, drone: Drone, next_node: str,
+                   edge_reservation: defaultdict[tuple[str, str], int]) -> str:
 
         current = drone.position
 
@@ -147,7 +158,7 @@ class Scheduler:
         return next_node
 
     # -------------------------
-    def run(self):
+    def run(self) -> None:
 
         self.plan_paths()
         self.rebuild_occupancy()
@@ -159,11 +170,11 @@ class Scheduler:
 
             # print(Fore.CYAN + f"\n===== TURN {self.turn} =====")
 
-            edge_reservation = defaultdict(int)
+            edge_res: defaultdict[tuple[str, str], int] = defaultdict(int)
 
             self.rebuild_occupancy()
 
-            turn_moves = []
+            turn_moves: list[str] = []
 
             for drone in self.drones:
 
@@ -190,8 +201,8 @@ class Scheduler:
 
                 nxt = drone.path[idx + 1]
 
-                if self.can_move(drone, nxt, edge_reservation):
-                    next_node = self.move_drone(drone, nxt, edge_reservation)
+                if self.can_move(drone, nxt, edge_res):
+                    next_node = self.move_drone(drone, nxt, edge_res)
                     turn_moves.append(f"D{drone.id}-{next_node}")
                     if drone.position == drone.goal:
                         drone.finished = True
@@ -200,8 +211,8 @@ class Scheduler:
                 print(Fore.YELLOW + " ".join(turn_moves))
         self.save_frame()
 
-    def save_frame(self):
-        frame = {}
+    def save_frame(self) -> None:
+        frame: dict[str, str] = {}
 
         for drone in self.drones:
             frame[str(drone.id)] = drone.position
