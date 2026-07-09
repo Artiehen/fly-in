@@ -1,5 +1,8 @@
 from dataclasses import dataclass
-# from typing import Any
+from typing import Literal
+
+
+HubKind = Literal["start", "end", "normal"]
 
 
 class InvalidConfig(Exception):
@@ -11,7 +14,7 @@ class MapData:
     name: str
     x: int
     y: int
-    kind: str | None  # start / end / normal
+    kind: HubKind  # start / end / normal
     zone: str = "normal"
     color: str = "none"
     max_drones: int = 1
@@ -138,7 +141,7 @@ def parse_file(filename: str) -> tuple[int, dict[str,
                 )
                 continue
 
-            kind = None
+            kind: HubKind | None = None
 
             if line.startswith("start_hub:"):
                 kind = "start"
