@@ -11,7 +11,7 @@ class MapData:
     name: str
     x: int
     y: int
-    kind: str  # start / end / normal
+    kind: str | None  # start / end / normal
     zone: str = "normal"
     color: str = "none"
     max_drones: int = 1
@@ -50,13 +50,13 @@ def parse_file(filename: str) -> tuple[int, dict[str,
                                                  MapData], list[Connection]]:
     nb_drones: int | None = None
     hubs: dict = {}
-    connections: list = []
+    connections: list[Connection] = []
     seen_connections: set[tuple[str, str]] = set()
 
     start_count = 0
     end_count = 0
 
-    allowed_zones = {"normal", "blocked", "restricted", "priority"}
+    allowed_zones: set[str] = {"normal", "blocked", "restricted", "priority"}
 
     with open(filename, "r") as file:
         for line_no, raw_line in enumerate(file, start=1):
@@ -114,7 +114,7 @@ def parse_file(filename: str) -> tuple[int, dict[str,
                     )
 
                 # undirected duplicate check
-                edge = tuple(sorted((hub1, hub2)))
+                edge = (hub1, hub2) if hub1 < hub2 else (hub2, hub1)
                 if edge in seen_connections:
                     raise InvalidConfig(
                         f"Line {line_no}: duplicate connection {hub1}-{hub2}"
