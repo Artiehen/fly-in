@@ -28,6 +28,7 @@ class Connection:
 
 
 def parse_metadata(text: str, line_no: int) -> dict[str, str]:
+    """Parses Metadata from maps.txt file"""
     metadata: dict[str, str] = {}
 
     if not text:
@@ -51,6 +52,7 @@ def parse_metadata(text: str, line_no: int) -> dict[str, str]:
 
 def parse_file(filename: str) -> tuple[int, dict[str,
                                                  MapData], list[Connection]]:
+    """Parses main file data and checks for errors"""
     nb_drones: int | None = None
     hubs: dict = {}
     connections: list[Connection] = []
