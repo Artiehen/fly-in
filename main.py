@@ -7,16 +7,7 @@ from drones import Drone
 from htmlexporter import HTMLExporter
 
 
-def create_drones(
-    nb_drones: int,
-    start: str,
-    goal: str,
-) -> list[Drone]:
-    return [
-        Drone(i + 1, start, goal)
-        for i in range(nb_drones)
-    ]
-
+def create_drones(nb_drones: int, start: str, goal: str) -> list[Drone]:
     return [
         Drone(i + 1, start, goal)
         for i in range(nb_drones)
