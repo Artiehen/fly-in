@@ -23,7 +23,19 @@ This will run the program, parse the map information and print the movement of t
 
 **Algorithm**
 
-This project uses A* search path finding algorithm. 
+This project uses A* search path finding algorithm. The key idea is that A* doesn't just consider how far it has already travelled—it also estimates how far it still has to go.
+
+For every node, it computes:
+
+f(n)=g(n)+h(n)
+
+where:
+
+g(n) = actual cost from the start to node n
+h(n) = estimated remaining cost from n to the goal (heuristic)
+f(n) = estimated total cost of a path through n
+
+I also imp
 
 A* path finding algorithm
 
@@ -87,7 +99,6 @@ and it will also generate a message stating that and HTML file with a more detai
 each line indicating movements in 1 turn
 
 ![alt text](image.png)
-
 
 
 **Resources:**
