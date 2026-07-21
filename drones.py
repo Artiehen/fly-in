@@ -1,9 +1,9 @@
 class Drone:
 
-    def __init__(self, drone_id, start, goal):
+    def __init__(self, drone_id: int, start: str, goal: str):
 
-        self.id = drone_id
-        self.position = start
-        self.goal = goal
-        self.path = []
-        self.finished = False
+        self.id: int = drone_id
+        self.position: str = start
+        self.goal: str = goal
+        self.path: list[str] = []
+        self.finished: bool = False
