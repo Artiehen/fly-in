@@ -16,9 +16,6 @@ ZONE_COST = {
 }
 
 
-# =========================
-# A* PATHFINDING
-# =========================
 def heuristic(hubs: dict[str, MapData], a: str, b: str) -> int:
     """Manhattan distance using coordinates"""
     ha = hubs[a]
@@ -79,9 +76,6 @@ def astar(graph: Graph, hubs: dict[str, MapData],
     return path
 
 
-# =========================
-# SCHEDULER
-# =========================
 class Scheduler:
 
     def __init__(self, graph: Graph, hubs: dict[str, MapData],
@@ -97,16 +91,13 @@ class Scheduler:
         # occupancy tracking
         self.zone_occupancy: defaultdict[str, int] = defaultdict(int)
 
-    # -------------------------
     def all_finished(self) -> bool:
         return all(d.finished for d in self.drones)
 
-    # -------------------------
     def plan_paths(self) -> None:
         for d in self.drones:
             d.path = astar(self.graph, self.hubs, d.position, d.goal)
 
-    # -------------------------
     def rebuild_occupancy(self) -> None:
         self.zone_occupancy.clear()
 
@@ -114,7 +105,6 @@ class Scheduler:
             if not d.finished:
                 self.zone_occupancy[d.position] += 1
 
-    # -------------------------
     def can_move(self, drone: Drone, next_node: str,
                  edge_reservation: defaultdict[tuple[str, str], int]) -> bool:
 
@@ -140,7 +130,6 @@ class Scheduler:
 
         return True
 
-    # -------------------------
     def move_drone(self, drone: Drone, next_node: str,
                    edge_reservation: defaultdict[tuple[str, str], int]) -> str:
 
@@ -160,7 +149,6 @@ class Scheduler:
 
         return next_node
 
-    # -------------------------
     def run(self) -> None:
 
         self.plan_paths()
