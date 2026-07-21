@@ -23,9 +23,6 @@ def create_drones(
     ]
 
 
-# -------------------------
-# Find start/end hubs
-# -------------------------
 def get_start_end(
     hubs: dict[str, MapData],
 ) -> tuple[str, str]:
@@ -47,9 +44,6 @@ def get_start_end(
     return start, end
 
 
-# -------------------------
-# MAIN
-# -------------------------
 def main() -> None:
 
     if len(sys.argv) < 2:
