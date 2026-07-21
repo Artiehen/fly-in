@@ -43,12 +43,29 @@ this doesn't guarantee the real path it only estimates what the path's cost.
 
 The cost of each zone are defined based on the metadata provided in the maps file. So with A* in loop `while pq:` it will be removing the lowest cost and adding it to the priority queue that will be organizing the queue by priority.
 
-Then it uses the class `Scheduler` to manage the drone's movements through the path found by A* Algorithm.
+The class `Scheduler` is responsible for managing the drone simulation after the map has been parsed and the graph has been created.
+
+Each drone is assigned a path calculated using the A* pathfinding algorithm. The Scheduler then advances the simulation turn by turn, moving drones along their planned routes while respecting the constraints of the environment.
+
+During each turn, the Scheduler:
+- Checks whether all drones have reached their destination.
+- Recalculates paths when a drone's current route becomes invalid.
+- Verifies that movements are possible according to hub capacity limits and connection capacity limits.
+- Reserves edges to prevent multiple drones from exceeding link capacities during the same turn.
+- Updates drone positions and records each simulation frame for later visualization.
+
+All simulation states are stored frame by frame and can be exported by the HTML exporter to create an animated visualization of the drone movements.
 
 
 **Visual Representation**
 
-For visual representation, I created an script called `htmlexporter.py` that will represent the path and drone's movements 
+For visual representation, I created an script called `htmlexporter.py`. It is responsible for creating a visual replay of the drone simulation.
+
+It receives the map structure (hubs and connections) and the frames recorded by the Scheduler during the simulation. These Python objects are converted into browser-friendly data and embedded into a standalone HTML file containing the required HTML, CSS, and JavaScript.
+
+When opened in a browser, the generated file reconstructs the map, displays hubs and connections, and animates drone movements according to the recorded simulation frames.
+
+The exporter is separated from the simulation logic, meaning it does not calculate paths or control drone movements. It only visualizes the final simulation results produced by the Scheduler.
 
 html visualization(made easier with AI)
 
@@ -109,6 +126,12 @@ each line indicating movements in 1 turn
 
 
 **Resources:**
+
+In creating this project, AI was used in debugging assistance with the scheduler and creating the htmlexporter script for the visual animation of the drones movements. 
+
 https://en.wikipedia.org/wiki/Pathfinding - pathfinding algorithm
+https://en.wikipedia.org/wiki/A*_search_algorithm - A* pathfinding algorithm
 
 https://www.youtube.com/watch?v=-L-WgKMFuhE pathfinding algorithm
+
+
