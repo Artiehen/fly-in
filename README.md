@@ -29,6 +29,8 @@ A* path finding algorithm
 
 **Visual Representation**
 
+For visual representation, I created an script called `htmlexporter.py` that will represent the path and drone's movements 
+
 html visualization(made easier with AI)
 
 **Example Input and Expected Output**
