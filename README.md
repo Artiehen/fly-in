@@ -35,9 +35,16 @@ g(n) = actual cost from the start to node n
 h(n) = estimated remaining cost from n to the goal (heuristic)
 f(n) = estimated total cost of a path through n
 
-I also imp
+I also use the Manhattan distance in fuction `def heuristic(hubs, a, b):` to calculate the distance between start and goal:
 
-A* path finding algorithm
+`|x1 - x2| + |y1 - y2|`
+
+this doesn't guarantee the real path it only estimates what the path's cost.
+
+The cost of each zone are defined based on the metadata provided in the maps file. So with A* in loop `while pq:` it will be removing the lowest cost and adding it to the priority queue that will be organizing the queue by priority.
+
+Then it uses the class `Scheduler` to manage the drone's movements through the path found by A* Algorithm.
+
 
 **Visual Representation**
 
