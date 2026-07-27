@@ -88,7 +88,6 @@ def parse_file(filename: str) -> tuple[int, dict[str,
 
                 continue
 
-            # enforces nb_drone must be first
             if nb_drones is None:
                 raise InvalidConfig(
                     f"Line {line_no}:"
@@ -112,13 +111,11 @@ def parse_file(filename: str) -> tuple[int, dict[str,
                 hub1 = hub1.strip()
                 hub2 = hub2.strip()
 
-                # check hubs exist
                 if hub1 not in hubs or hub2 not in hubs:
                     raise InvalidConfig(
                         f"Line {line_no}: connection uses undefined hub"
                     )
 
-                # undirected duplicate check
                 edge = (hub1, hub2) if hub1 < hub2 else (hub2, hub1)
                 if edge in seen_connections:
                     raise InvalidConfig(
@@ -177,13 +174,11 @@ def parse_file(filename: str) -> tuple[int, dict[str,
             x = int(parts[1])
             y = int(parts[2])
 
-            # name rules: no spaces, no dashes
             if "-" in name or " " in name:
                 raise InvalidConfig(
                     f"Line {line_no}: invalid hub name '{name}'"
                 )
 
-            # uniqueness
             if name in hubs:
                 raise InvalidConfig(
                     f"Line {line_no}: duplicate hub name '{name}'"
