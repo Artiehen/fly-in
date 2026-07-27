@@ -8,3 +8,4 @@ class Drone:
         self.goal: str = goal
         self.path: list[str] = []
         self.finished: bool = False
+        self.wait = 0
