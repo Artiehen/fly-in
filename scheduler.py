@@ -11,7 +11,7 @@ init(autoreset=True)
 ZONE_COST = {
     "normal": 1,
     "priority": 1,
-    "restricted": 3,
+    "restricted": 2,
     "blocked": float("inf")
 }
 
@@ -63,7 +63,6 @@ def astar(graph: Graph, hubs: dict[str, MapData],
     if goal not in came_from:
         return []
 
-    # reconstruct path
     path: list = []
     node: str | None = goal
 
@@ -80,6 +79,7 @@ class Scheduler:
 
     def __init__(self, graph: Graph, hubs: dict[str, MapData],
                  drones: list[Drone]) -> None:
+        """Class that map and its connections."""
 
         self.graph: Graph = graph
         self.hubs: dict[str, MapData] = hubs
@@ -88,17 +88,28 @@ class Scheduler:
 
         self.turn: int = 0
 
-        # occupancy tracking
+        # start_hub = drones[0].position  # assuming there's at least one drone
+
+        # if len(drones) > hubs[start_hub].max_drones:
+        #     raise ValueError(
+        #         f"Start hub '{start_hub}' has capacity "
+        #         f"{hubs[start_hub].max_drones}, "
+        #         f"but {len(drones)} drones were created."
+        #     )
+
         self.zone_occupancy: defaultdict[str, int] = defaultdict(int)
 
     def all_finished(self) -> bool:
+        """Returns true when all drones have reached the goal"""
         return all(d.finished for d in self.drones)
 
     def plan_paths(self) -> None:
+        """Gets the shortest path stablished by A* algorithm"""
         for d in self.drones:
             d.path = astar(self.graph, self.hubs, d.position, d.goal)
 
     def rebuild_occupancy(self) -> None:
+        """Updates current drone status based on the last turn"""
         self.zone_occupancy.clear()
 
         for d in self.drones:
@@ -107,14 +118,13 @@ class Scheduler:
 
     def can_move(self, drone: Drone, next_node: str,
                  edge_reservation: defaultdict[tuple[str, str], int]) -> bool:
+        """Determines if the drone can move to the next hub"""
 
         hub = self.hubs[next_node]
 
-        # zone capacity check
         if self.zone_occupancy[next_node] >= hub.max_drones:
             return False
 
-        # edge capacity check
         current = drone.position
         edge: tuple[str, str]
 
@@ -132,6 +142,7 @@ class Scheduler:
 
     def move_drone(self, drone: Drone, next_node: str,
                    edge_reservation: defaultdict[tuple[str, str], int]) -> str:
+        """Moves the drone to the next hub"""
 
         current = drone.position
 
@@ -147,9 +158,16 @@ class Scheduler:
 
         drone.position = next_node
 
+        zone = self.hubs[next_node]
+        move_cost = ZONE_COST.get(zone.zone, 1)
+
+        if move_cost != float("inf"):
+            drone.wait = max(0, int(move_cost) - 1)
+
         return next_node
 
     def run(self) -> None:
+        """Run simulation accros path stablished and prints movements"""
 
         self.plan_paths()
         self.rebuild_occupancy()
@@ -158,8 +176,6 @@ class Scheduler:
             self.save_frame()
 
             self.turn += 1
-
-            # print(Fore.CYAN + f"\n===== TURN {self.turn} =====")
 
             edge_res: defaultdict[tuple[str, str], int] = defaultdict(int)
 
@@ -172,7 +188,11 @@ class Scheduler:
                 if drone.finished:
                     continue
 
-                # if path invalid → recompute (dynamic replanning)
+                if drone.wait > 0:
+                    drone.wait -= 1
+                    continue
+
+                # (dynamic replanning)
                 if (
                     not drone.path
                     or drone.position not in drone.path
@@ -203,6 +223,7 @@ class Scheduler:
         self.save_frame()
 
     def save_frame(self) -> None:
+        """Saves each movement for the HTML rendition"""
         frame: dict[str, str] = {}
 
         for drone in self.drones:
