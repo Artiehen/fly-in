@@ -8,12 +8,12 @@ CACHE = __pycache__
 MYPYCACHE = .mypy_cache
 SOURCE = source
 
-all: run
+all: install lint run
 
 install:
 	pip install $(MYPY)
 	pip install $(FLAKE8)
-	pip install $(INSTALL_MAZEGEN)
+	pip install colorama
 
 run:
 	$(PYTHON) $(MAIN) $(CONFIG)
@@ -26,8 +26,8 @@ lint:
 	$(PYTHON) -m $(MYPY) . --warn-return-any --warn-unused-ignores --ignore-missing-imports --disallow-untyped-defs --check-untyped-defs
 
 clean:
-	rm -rf $(VENV) $(CACHE) $(MYPYCACHE)
+	rm -rf $(VENV) $(CACHE) $(MYPYCACHE) simulation.html
 
 re: clean all
 
-.PHONY: all install vrt run debug build lint clean re
+.PHONY: all install run debug lint clean re
