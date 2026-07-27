@@ -8,6 +8,7 @@ from htmlexporter import HTMLExporter
 
 
 def create_drones(nb_drones: int, start: str, goal: str) -> list[Drone]:
+    """Creates the drones"""
     return [
         Drone(i + 1, start, goal)
         for i in range(nb_drones)
@@ -17,6 +18,7 @@ def create_drones(nb_drones: int, start: str, goal: str) -> list[Drone]:
 def get_start_end(
     hubs: dict[str, MapData],
 ) -> tuple[str, str]:
+    """Sets the start and end of the paths"""
 
     start: str | None = None
     end: str | None = None
@@ -36,6 +38,7 @@ def get_start_end(
 
 
 def main() -> None:
+    """Main Function that initializes the program"""
 
     if len(sys.argv) < 2:
         print("Usage: python main.py <map_file>")
@@ -43,16 +46,15 @@ def main() -> None:
 
     filename = sys.argv[1]
 
-    # 1. Parse file
     nb_drones, hubs, connections = parse_file(filename)
 
-    # 2. Find start/end
     start, goal = get_start_end(hubs)
 
-    # 3. Build drones
     drones = create_drones(nb_drones, start, goal)
 
-    # 4. Create scheduler
+    # if start:
+    #     raise ValueError("Too many drones for start hub")
+
     graph = Graph(hubs, connections)
 
     scheduler = Scheduler(
@@ -61,8 +63,10 @@ def main() -> None:
         drones
     )
 
-    # 6. Run simulation
-    scheduler.run()
+    try:
+        scheduler.run()
+    except KeyboardInterrupt as e:
+        print(e)
     print(f"Total ammount of turns: {scheduler.turn}")
     exporter = HTMLExporter(
         hubs,
@@ -74,4 +78,7 @@ def main() -> None:
 
 
 if __name__ == "__main__":
-    main()
+    try:
+        main()
+    except Exception as e:
+        print(e)
